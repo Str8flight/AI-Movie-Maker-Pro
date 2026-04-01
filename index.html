@@ -92,7 +92,7 @@ async function generateMovie() {
   formData.append("file", file);
 
   try {
-    const response = await fetch("https://YOUR-BACKEND-URL/upload", {
+    const response = await fetch("ai-movie-backend-production.up.railway.app", {
       method: "POST",
       body: formData
     });
