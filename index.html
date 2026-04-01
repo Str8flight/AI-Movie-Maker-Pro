@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI PDF to Movie</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    video {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    #downloadBtn {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎬 AI PDF → Movie Generator</h1>
+
+  <input type="file" id="fileInput" accept="application/pdf">
+
+  <button onclick="generateMovie()">Generate Movie</button>
+
+  <p id="status">Status: Idle</p>
+
+  <video id="videoPlayer" controls style="display:none;"></video>
+
+  <a id="downloadBtn" download>
+    <button>Download Movie</button>
+  </a>
+</div>
+
+<script>
+async function generateMovie() {
+  const file = document.getElementById("fileInput").files[0];
+
+  if (!file) {
+    alert("Please upload a PDF first");
+    return;
+  }
+
+  document.getElementById("status").innerText = "Uploading & Processing...";
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch("https://YOUR-BACKEND-URL/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    const video = document.getElementById("videoPlayer");
+    video.src = data.videoUrl;
+    video.style.display = "block";
+
+    const download = document.getElementById("downloadBtn");
+    download.href = data.videoUrl;
+    download.style.display = "block";
+
+    document.getElementById("status").innerText = "Movie Ready 🎬";
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById("status").innerText = "Error generating movie";
+  }
+}
+</script>
+
+</body>
+</html>
