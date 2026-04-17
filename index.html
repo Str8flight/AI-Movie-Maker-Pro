@@ -1,87 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Text → Movie Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Text → Movie Generator</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: white;
+  margin: 0;
+}
 
-    .container {
-      background: #1e293b;
-      padding: 30px;
-      border-radius: 15px;
-      max-width: 600px;
-      margin: auto;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
+.container {
+  background: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 650px;
+  margin: 60px auto;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
 
-    h1 {
-      margin-bottom: 20px;
-    }
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
 
-    textarea {
-      width: 100%;
-      height: 150px;
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 15px;
-      border: none;
-      resize: none;
-    }
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
 
-    button {
-      padding: 12px 20px;
-      background: #3b82f6;
-      border: none;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
-    }
+textarea {
+  width: 100%;
+  height: 140px;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  margin-bottom: 15px;
+  border: none;
+  resize: none;
+  outline: none;
+}
 
-    button:hover {
-      background: #2563eb;
-    }
+button {
+  padding: 14px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 16px;
+  transition: 0.3s;
+}
 
-    video {
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 10px;
-    }
+button:hover {
+  transform: scale(1.03);
+}
 
-    #downloadBtn {
-      display: none;
-      margin-top: 10px;
-    }
-  </style>
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.spinner {
+  display: none;
+  margin: 15px auto;
+  border: 4px solid #334155;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+video {
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 12px;
+  display: none;
+}
+
+#downloadBtn {
+  display: none;
+  margin-top: 10px;
+}
+
+.footer {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.5;
+  margin-top: 25px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>🎬 AI Text → Movie Generator</h1>
+  <h1>🎬 AI Movie Generator</h1>
+  <div class="subtitle">Turn text into faceless AI videos instantly</div>
 
   <textarea id="textInput" placeholder="Type or paste your text here..."></textarea>
 
-  <button onclick="generateMovie()">Generate Movie</button>
+  <button id="generateBtn" onclick="generateMovie()">🚀 Generate Movie</button>
 
-  <p id="status">Status: Idle</p>
+  <div class="spinner" id="spinner"></div>
+  <div class="status" id="status">Ready</div>
 
-  <video id="videoPlayer" controls style="display:none;"></video>
+  <video id="videoPlayer" controls></video>
 
   <a id="downloadBtn" download>
-    <button>Download Movie</button>
+    <button>⬇ Download Movie</button>
   </a>
+
+  <div class="footer">AI Video Generator • Powered by Railway Backend</div>
 </div>
 
 <script>
@@ -93,10 +142,15 @@ async function generateMovie() {
     return;
   }
 
-  document.getElementById("status").innerText = "Generating movie...";
+  const status = document.getElementById("status");
+  const spinner = document.getElementById("spinner");
+  const btn = document.getElementById("generateBtn");
+
+  spinner.style.display = "block";
+  status.innerText = "⏳ Generating movie...";
+  btn.disabled = true;
 
   try {
-    // ✅ Replace with your Railway backend public URL
     const response = await fetch("https://ai-movie-backend-production.up.railway.app/generate-text-video", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -107,6 +161,8 @@ async function generateMovie() {
 
     const data = await response.json();
 
+    if (!data.videoUrl) throw new Error("Invalid response");
+
     const video = document.getElementById("videoPlayer");
     video.src = data.videoUrl;
     video.style.display = "block";
@@ -115,12 +171,15 @@ async function generateMovie() {
     download.href = data.videoUrl;
     download.style.display = "block";
 
-    document.getElementById("status").innerText = "Movie Ready 🎬";
+    status.innerText = "✅ Movie Ready";
 
   } catch (error) {
     console.error(error);
-    document.getElementById("status").innerText = "Error generating movie";
+    status.innerText = "❌ Error generating movie";
   }
+
+  spinner.style.display = "none";
+  btn.disabled = false;
 }
 </script>
 
